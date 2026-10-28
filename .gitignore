@@ -2,4 +2,5 @@
 ssl/*.pem
 ssl/*.key
 ssl/*.crt
-*.log
+logs/
+logs/nginx/*
