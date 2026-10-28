@@ -1,24 +1,24 @@
 services:
   db:
     image: mariadb:10.11
-    container_name: ostureha_db
+    container_name: app_db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change_this_password}
       MYSQL_DATABASE: wordpress
     volumes:
       - db_data:/var/lib/mysql
 
   redis:
     image: redis:alpine
-    container_name: ostureha_redis
+    container_name: app_redis
     restart: always
     volumes:
       - redis_data:/data
 
   wordpress:
     image: wordpress:fpm-alpine
-    container_name: ostureha_wordpress
+    container_name: app_wordpress
     restart: always
     depends_on:
       - db
@@ -28,7 +28,7 @@ services:
 
   nginx:
     image: nginx:alpine
-    container_name: ostureha_nginx
+    container_name: app_nginx
     restart: always
     ports:
       - "80:80"
@@ -43,7 +43,7 @@ services:
 
   redis-exporter:
     image: oliver006/redis_exporter:latest
-    container_name: ostureha_redis_exporter
+    container_name: app_redis_exporter
     restart: always
     environment:
       - REDIS_ADDR=redis://redis:6379
@@ -52,7 +52,7 @@ services:
 
   nginx-exporter:
     image: nginx/nginx-prometheus-exporter:latest
-    container_name: ostureha_nginx_exporter
+    container_name: app_nginx_exporter
     restart: always
     command:
       - -nginx.scrape-uri=http://nginx/stub_status
@@ -61,7 +61,7 @@ services:
 
   node-exporter:
     image: prom/node-exporter:latest
-    container_name: ostureha_node_exporter
+    container_name: app_node_exporter
     restart: always
     volumes:
       - /proc:/host/proc:ro
@@ -74,7 +74,7 @@ services:
 
   nginxlog-exporter:
     image: quay.io/martinhelmich/prometheus-nginxlog-exporter:v1.11.0
-    container_name: ostureha_nginxlog_exporter
+    container_name: app_nginxlog_exporter
     restart: unless-stopped
     command: ["-config-file", "/etc/prometheus-nginxlog-exporter.hcl"]
     volumes:
@@ -85,7 +85,7 @@ services:
 
   prometheus:
     image: prom/prometheus:latest
-    container_name: ostureha_prometheus
+    container_name: app_prometheus
     restart: always
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
@@ -93,12 +93,12 @@ services:
 
   grafana:
     image: grafana/grafana:10.4.2
-    container_name: ostureha_grafana
+    container_name: app_grafana
     restart: always
     environment:
       - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_SERVER_ROOT_URL=https://ostoreha-fardis.ir/grafana/
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_SERVER_ROOT_URL=https://example.com/grafana/
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
     ports:
       - "3000:3000"
